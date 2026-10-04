@@ -1,96 +1,106 @@
-# A* Search Algorithm
+import heapq
 
-# Graph with path costs
-graph = {
-    'A': {'B': 1, 'C': 4},
-    'B': {'D': 2, 'E': 5},
-    'C': {'F': 3},
-    'D': {'G': 3},
-    'E': {'G': 1},
-    'F': {'G': 2},
-    'G': {}
-}
+def heuristic(state, goal):
+    # Manhattan distance
+    distance = 0
+    for i in range(9):
+        if state[i] != 0:
+            goal_pos = goal.index(state[i])
+            r1, c1 = divmod(i, 3)
+            r2, c2 = divmod(goal_pos, 3)
+            distance += abs(r1 - r2) + abs(c1 - c2)
+    return distance
 
-# Heuristic values
-h = {
-    'A': 6,
-    'B': 5,
-    'C': 5,
-    'D': 3,
-    'E': 1,
-    'F': 2,
-    'G': 0
-}
+
+def get_neighbors(state):
+    neighbors = []
+    zero = state.index(0)
+    row, col = divmod(zero, 3)
+
+    moves = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    for dr, dc in moves:
+        nr, nc = row + dr, col + dc
+
+        if 0 <= nr < 3 and 0 <= nc < 3:
+            new_state = list(state)
+            new_zero = nr * 3 + nc
+
+            new_state[zero], new_state[new_zero] = \
+                new_state[new_zero], new_state[zero]
+
+            neighbors.append(tuple(new_state))
+
+    return neighbors
 
 
 def a_star(start, goal):
+    pq = []
+    heapq.heappush(pq, (0, start))
 
-    open_list = [start]
     cost = {start: 0}
     parent = {start: None}
 
-    while open_list:
+    while pq:
+        _, current = heapq.heappop(pq)
 
-        # Find node with lowest f(n)
-        current = open_list[0]
-
-        for node in open_list:
-            f_current = cost[current] + h[current]
-            f_node = cost[node] + h[node]
-
-            if f_node < f_current:
-                current = node
-
-        # Goal reached
         if current == goal:
-            break
+            path = []
+            while current is not None:
+                path.append(current)
+                current = parent[current]
 
-        open_list.remove(current)
+            return path[::-1]
 
-        # Check neighbouring nodes
-        for neighbor in graph[current]:
-
-            new_cost = cost[current] + graph[current][neighbor]
+        for neighbor in get_neighbors(current):
+            new_cost = cost[current] + 1
 
             if neighbor not in cost or new_cost < cost[neighbor]:
-
                 cost[neighbor] = new_cost
+
+                f = new_cost + heuristic(neighbor, goal)
+
+                heapq.heappush(pq, (f, neighbor))
                 parent[neighbor] = current
 
-                if neighbor not in open_list:
-                    open_list.append(neighbor)
-
-    # Create path
-    path = []
-    current = goal
-
-    while current is not None:
-        path.append(current)
-        current = parent[current]
-
-    path.reverse()
-
-    return path, cost[goal]
+    return None
 
 
-# Run A*
-path, total_cost = a_star('A', 'G')
+start = (1, 2, 3,
+         4, 0, 6,
+         7, 5, 8)
 
-print("A* SEARCH")
-print("-------------------------")
-print("Path:", " -> ".join(path))
-print("Total Cost:", total_cost)
+goal = (1, 2, 3,
+        4, 5, 6,
+        7, 8, 0)
+
+path = a_star(start, goal)
+
+print("A* Search Solution:\n")
+
+for step, state in enumerate(path):
+    print("Step", step)
+    for i in range(0, 9, 3):
+        print(state[i:i+3])
+    print()
+
+
 
 *OUTPUT*
+A* Search Solution:
 
-A* SEARCH
--------------------------
-Path: A -> B -> D -> G
-Total Cost: 6
+Step 0
+(1, 2, 3)
+(4, 0, 6)
+(7, 5, 8)
 
+Step 1
+(1, 2, 3)
+(4, 5, 6)
+(7, 0, 8)
 
-EXPLANATION:
+Step 2
+(1, 2, 3)
+(4, 5, 6)
+(7, 8, 0)
 
-A → B → D → G is the shortest path.
-
-Cost = 1 + 2 + 3 = 6
