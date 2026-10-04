@@ -1,92 +1,88 @@
-# AO* Search Algorithm
+def ao_star(graph, heuristic, start):
+    solved = {}
+    solution = {}
 
-# Each node contains different choices.
-# Each choice can contain one or more nodes.
-#
-# One choice = OR
-# Nodes inside one choice = AND
+    def solve(node):
+        if node not in graph:
+            return heuristic[node]
 
+        if node in solved:
+            return heuristic[node]
+
+        best_cost = float('inf')
+        best_option = None
+
+        for option in graph[node]:
+            # OR choice
+            if isinstance(option, list):
+                cost = 0
+
+                # AND: all nodes must be solved
+                for child in option:
+                    cost += solve(child)
+
+                if cost < best_cost:
+                    best_cost = cost
+                    best_option = option
+
+            else:
+                cost = solve(option)
+
+                if cost < best_cost:
+                    best_cost = cost
+                    best_option = option
+
+        heuristic[node] = best_cost
+        solution[node] = best_option
+        solved[node] = True
+
+        return best_cost
+
+    cost = solve(start)
+
+    return cost, solution
+
+
+# AO* Graph
 graph = {
-    'A': [
-        [('B', 1)],
-        [('C', 2)]
-    ],
-
-    'B': [
-        [('D', 2), ('E', 2)]
-    ],
-
-    'C': [
-        [('F', 3)],
-        [('G', 5)]
-    ],
-
-    'D': [],
-    'E': [],
-    'F': [],
-    'G': []
+    'A': [['B', 'C'], ['D']],
+    'B': [['E'], ['F']],
+    'C': ['G'],
+    'D': ['H', 'I']
 }
 
-
-# Heuristic values
-h = {
-    'A': 0,
-    'B': 1,
-    'C': 1,
-    'D': 0,
-    'E': 0,
-    'F': 0,
-    'G': 0
+# Initial heuristic values
+heuristic = {
+    'A': 10,
+    'B': 4,
+    'C': 2,
+    'D': 6,
+    'E': 1,
+    'F': 5,
+    'G': 1,
+    'H': 2,
+    'I': 2
 }
 
+cost, solution = ao_star(graph, heuristic, 'A')
 
-def ao_star(node):
+print("AO* Search")
+print("Minimum Cost:", cost)
 
-    # If node is a goal/leaf node
-    if len(graph[node]) == 0:
-        return h[node]
+print("\nSolution Graph:")
 
-    best_cost = float('inf')
-    best_choice = None
+for node, choice in solution.items():
+    print(node, "->", choice)
 
-    # OR: choose the cheapest option
-    for choice in graph[node]:
-
-        total_cost = 0
-
-        # AND: all nodes in this choice must be solved
-        for child, edge_cost in choice:
-
-            child_cost = ao_star(child)
-
-            total_cost = total_cost + edge_cost + child_cost
-
-        # Select minimum cost
-        if total_cost < best_cost:
-            best_cost = total_cost
-            best_choice = choice
-
-    print(node, "->", [child for child, cost in best_choice],
-          "Cost =", best_cost)
-
-    return best_cost
-
-
-print("AO* SEARCH")
-print("-------------------------")
-
-minimum_cost = ao_star('A')
-
-print("-------------------------")
-print("Minimum Cost:", minimum_cost)
 
 
 
 *OUTPUT*
-AO* SEARCH
--------------------------
-B -> ['D', 'E'] Cost = 4
-C -> ['F'] Cost = 3
-A -> ['B'] Cost = 5
--------------------------
-Minimum Cost: 5
+AO* Search
+Minimum Cost: 3
+
+Solution Graph:
+B -> ['E']
+C -> G
+D -> ['H', 'I']
+A -> ['B', 'C']
