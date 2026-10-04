@@ -79,3 +79,14 @@ minimum_cost = ao_star('A')
 
 print("-------------------------")
 print("Minimum Cost:", minimum_cost)
+
+
+
+*OUTPUT*
+AO* SEARCH
+-------------------------
+B -> ['D', 'E'] Cost = 4
+C -> ['F'] Cost = 3
+A -> ['B'] Cost = 5
+-------------------------
+Minimum Cost: 5
