@@ -80,3 +80,17 @@ print("A* SEARCH")
 print("-------------------------")
 print("Path:", " -> ".join(path))
 print("Total Cost:", total_cost)
+
+*OUTPUT*
+
+A* SEARCH
+-------------------------
+Path: A -> B -> D -> G
+Total Cost: 6
+
+
+EXPLANATION:
+
+A → B → D → G is the shortest path.
+
+Cost = 1 + 2 + 3 = 6
